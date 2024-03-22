@@ -11,13 +11,16 @@ class DrawPanel extends JPanel implements MouseListener {
 
     private ArrayList<Card> hand;
     private ArrayList<Card> deck;
+    private Deck currentDeck;
     private Rectangle button;
+    private Rectangle otherButton;
 
     public DrawPanel() {
         button = new Rectangle(75, 200, 160, 26);
+        otherButton = new Rectangle(275, 50, 160, 26);
         this.addMouseListener(this);
         hand = Card.buildHand();
-        Deck currentDeck = new Deck(hand);
+        currentDeck = new Deck(hand);
         deck = currentDeck.getDeck();
     }
 
@@ -42,7 +45,9 @@ class DrawPanel extends JPanel implements MouseListener {
         }
         g.setFont(new Font("Courier New", Font.BOLD, 20));
         g.drawString("GET NEW CARDS", 77, 220);
+        g.drawString("REPLACE CARDS", 277, 70);
         g.drawRect((int)button.getX(), (int)button.getY(), (int)button.getWidth(), (int)button.getHeight());
+        g.drawRect((int)otherButton.getX(), (int)otherButton.getY(), (int)otherButton.getWidth(), (int)otherButton.getHeight());
     }
 
     public void mousePressed(MouseEvent e) {
@@ -53,6 +58,7 @@ class DrawPanel extends JPanel implements MouseListener {
             if (button.contains(clicked)) {
                 hand = Card.buildHand();
                 //update/create new deck based on new hand
+                deck = new Deck(hand).getDeck();
             }
 
             for (int i = 0; i < hand.size(); i++) {
@@ -66,7 +72,15 @@ class DrawPanel extends JPanel implements MouseListener {
         if (e.getButton() == 3) {
             for (int i = 0; i < hand.size(); i++) {
                 Rectangle box = hand.get(i).getCardBox();
-                if (box.contains(clicked)) {
+                boolean highlighted = hand.get(i).getHighlight();
+                if (box.contains(clicked) && highlighted){
+                    Card replaced = hand.get(i);
+                    hand.remove(i);
+                    hand.add(i, currentDeck.getNewCard());
+                    replaced.flipHighlight();
+                    currentDeck.returnCard(replaced);
+                }
+                else if (box.contains(clicked)) {
                     hand.get(i).flipHighlight();
                 }
             }
